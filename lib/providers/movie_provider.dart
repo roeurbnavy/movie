@@ -1,60 +1,75 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:movies/model/genre.dart';
 import 'package:movies/model/movie.dart';
+import 'package:movies/model/movie_detail.dart';
+import 'package:movies/model/person.dart';
 import 'package:movies/services/movies_services.dart';
 
 class MovieProvider with ChangeNotifier {
   final MovieServices _service = MovieServices();
 
   bool _isLoading = false;
-  dynamic _response;
-  String _videoPath = '';
+  List<Movie> _nowPlayingMovies = [];
   List<Movie> _movies = [];
-
-  final List<Movie> _favoriteList = [];
+  MovieDetail? _movieDetail;
+  List<Genre> _genres = [];
+  List<Person> _trendingPersons = [];
 
   // Get
   List<Movie> get movies => _movies;
-  List<Movie> get favoriteList => _favoriteList;
-  String get videoPath => _videoPath;
+  List<Movie> get nowPlayingMovies => _nowPlayingMovies;
+  List<Genre> get genres => _genres;
+  List<Person> get trendingPerson => _trendingPersons;
+  MovieDetail? get movieDetail => _movieDetail;
   bool get isLoading => _isLoading;
-  dynamic get response => _response;
 
 // Method
-  Future<void> getPopular() async {
+  Future<void> getNowPlayingMovie() async {
     _isLoading = true;
     notifyListeners();
 
-    final response = await _service.getPopular();
+    final response = await _service.getNowPlayingMovie();
     // print('response $response');
-    _response = response['res'];
-    _movies = response['data'];
+    _nowPlayingMovies = response;
     _isLoading = false;
     notifyListeners();
   }
 
-  // Method
-  Future<String> getVideo(int movieId) async {
-    _isLoading = true;
-    notifyListeners();
+  Future<List<Genre>> getGenreList() async {
+    final response = await _service.getGenreList();
 
-    final response = await _service.getVideo(movieId);
-
-    _videoPath = response;
-    _isLoading = false;
-    notifyListeners();
-
-    return _videoPath;
+    _genres = response;
+    return _genres;
   }
 
-  void addToList(Movie movie) {
-    _favoriteList.add(movie);
+  Future<List<Movie>> getMovieByGenre(int genreId) async {
+    // _isLoading = true;
+    // notifyListeners();
+
+    final response = await _service.getMovieByGenre(genreId);
+    // print('response $response');
+    _movies = response;
+    // _isLoading = false;
     notifyListeners();
+    return _movies;
   }
 
-  void removeFromList(Movie movie) {
-    _favoriteList.remove(movie);
+  Future<List<Person>> getTrendingPerson() async {
+    final response = await _service.getTrendingPersons();
+    // print('response $response');
+
+    _trendingPersons = response;
     notifyListeners();
+    return _trendingPersons;
+  }
+
+  Future<MovieDetail?> getMovieDetail(int movieId) async {
+    final response = await _service.getMovieDetail(movieId);
+
+    _movieDetail = response;
+    notifyListeners();
+    return _movieDetail;
   }
 }
