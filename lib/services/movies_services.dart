@@ -32,22 +32,24 @@ class MovieServices {
     }
   }
 
-  Future<List<Movie>> getMovieByGenre(int genreId) async {
+  Future<Map<String, dynamic>> getMovieByGenre(int genreId, int page) async {
     try {
-      final uri = Uri.parse("$url/discover/movie?with_genres=$genreId&$apiKey");
+      final uri = Uri.parse(
+        "$url/discover/movie?with_genres=$genreId&page=$page&$apiKey",
+      );
       final response = await http.get(uri);
       List<Movie> data = [];
+      int totalPages = 0;
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
+
         final results = json['results'] as List;
-        // print("results $results");
+        totalPages = json['total_pages'];
         if (results.isNotEmpty) {
           data = results.map((e) => Movie.fromJson(e)).toList();
         }
       }
-      return data;
-
-      // return [];
+      return {'data': data, 'totalPages': totalPages};
     } catch (e, stacktrace) {
       throw Exception("Exception accrued $e with stacktrace $stacktrace");
     }

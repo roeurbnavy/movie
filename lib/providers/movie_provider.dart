@@ -13,8 +13,10 @@ class MovieProvider with ChangeNotifier {
   bool _isLoading = false;
   List<Movie> _nowPlayingMovies = [];
   List<Movie> _movies = [];
+  int _totalPages = 0;
   MovieDetail? _movieDetail;
   List<Genre> _genres = [];
+  int _selectedGenre = 28;
   List<Person> _trendingPersons = [];
 
   // Get
@@ -24,6 +26,8 @@ class MovieProvider with ChangeNotifier {
   List<Person> get trendingPerson => _trendingPersons;
   MovieDetail? get movieDetail => _movieDetail;
   bool get isLoading => _isLoading;
+  int get selectedGenre => _selectedGenre;
+  int get totalPages => _totalPages;
 
 // Method
   Future<void> getNowPlayingMovie() async {
@@ -44,15 +48,19 @@ class MovieProvider with ChangeNotifier {
     return _genres;
   }
 
-  Future<List<Movie>> getMovieByGenre(int genreId) async {
-    // _isLoading = true;
-    // notifyListeners();
+  void changeGenre(int id) {
+    _selectedGenre = id;
+    _movies = [];
+  }
 
-    final response = await _service.getMovieByGenre(genreId);
-    // print('response $response');
-    _movies = response;
-    // _isLoading = false;
-    notifyListeners();
+  Future<List<Movie>> getMovieByGenre(int page) async {
+    if (page == _totalPages) return [];
+
+    final response = await _service.getMovieByGenre(_selectedGenre, page);
+    _movies.addAll(response['data']);
+    _totalPages = response['totalPages'];
+    // notifyListeners();
+    print('_movies ${_movies.length}');
     return _movies;
   }
 
